@@ -1,4 +1,4 @@
-from multiprocessing import Pool, Process, Queue, Lock
+from multiprocessing import Pool, Process, Queue, Lock, Pipe
 import time
 import os
 
@@ -81,6 +81,7 @@ class LockDemo:
             p.join()
         print(counter.value)
 
+    @staticmethod
     def counter_with_lock():
         counter = Value('i', 0)
         lock = Lock()
@@ -95,10 +96,46 @@ class LockDemo:
             p.join()
         print(counter.value)
 
-if __name__ == "__main__":
-    MultiprocessingDemo.basic_pool_test()
-    MultiprocessingDemo.process_communication_via_queue()
-    MultiprocessingDemo.producer_consumer_via_queue()
+class PipeDemo:
+    @staticmethod
+    def basic_pipe_communication():
+        def sender(conn):
+            print(f"Sender {os.getpid()} started")
+            conn.send("Hello from the sender")
+            conn.send([1, 2, 3, 4, 5])
+            conn.send({"a": 1, "b": 2})
+            conn.close()
+            print(f"Sender {os.getpid()} finished")
+        def receiver(conn):
+            print(f"Receiver {os.getpid()} started")
+            while True:
+                try:
+                    msg = conn.recv()
+                    print(f"Received {msg}")
+                except EOFError:
+                    print("Receiver EOFError")
+                    break
+                except ConnectionError:
+                    print("Receiver ConnectionError")
+                    break
+            print(f"Receiver {os.getpid()} finished")
+        send_conn, recv_conn = Pipe()
+        p1 = Process(target=sender, args=(send_conn,))
+        p2 = Process(target=receiver, args=(recv_conn,))
+        p1.start()
+        p2.start()
+        p1.join()
+        p2.join()
+        # close the connection
+        send_conn.close()
+        recv_conn.close()
 
-    LockDemo.counter_without_lock()
-    LockDemo.counter_with_lock()
+
+if __name__ == "__main__":
+    # MultiprocessingDemo.basic_pool_test()
+    # MultiprocessingDemo.process_communication_via_queue()
+    # MultiprocessingDemo.producer_consumer_via_queue()
+
+    # LockDemo.counter_without_lock()
+    # LockDemo.counter_with_lock()
+    PipeDemo.basic_pipe_communication()

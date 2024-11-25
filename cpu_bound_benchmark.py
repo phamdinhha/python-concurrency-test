@@ -8,7 +8,6 @@ def fibonacci(n):
     return fibonacci(n-1) + fibonacci(n-2)
 
 def heavy_computation(n):
-    # Do multiple fibonacci calculations to make it more CPU intensive
     results = []
     for i in range(n, n+3):
         results.append(fibonacci(i))
@@ -19,8 +18,7 @@ async def async_heavy_computation(n):
 
 def run_sequential():
     start_time = time.time()
-    # Calculate fibonacci numbers sequentially
-    for n in range(35, 39):  # Using larger numbers to make it more CPU intensive
+    for n in range(35, 39):
         heavy_computation(n)
     end_time = time.time()
     print(f"Sequential: {end_time - start_time:.2f} seconds")

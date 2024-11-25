@@ -7,11 +7,10 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from websockets.sync.client import connect as sync_connect
 from websockets.client import connect as async_connect
 
-# Using a public WebSocket echo server
 WS_URL = "wss://ws.postman-echo.com/raw"
 MESSAGE = "Hello, World!"
-NUM_MESSAGES = 100  # Number of messages per connection
-NUM_CONNECTIONS = 10  # Number of simultaneous connections
+NUM_MESSAGES = 100
+NUM_CONNECTIONS = 10
 
 def sync_websocket_task():
     try:
@@ -59,9 +58,7 @@ def run_multiprocessing(num_processes=4):
     start_time = time.time()
     
     with ProcessPoolExecutor(max_workers=num_processes) as executor:
-        # Use submit() and create a list of futures
         futures = [executor.submit(sync_websocket_task) for _ in range(NUM_CONNECTIONS)]
-        # Wait for all futures to complete and get results
         results = [f.result() for f in futures]
     
     end_time = time.time()
@@ -72,9 +69,7 @@ def run_multithreading(num_threads=10):
     start_time = time.time()
     
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        # Use submit() and create a list of futures
         futures = [executor.submit(sync_websocket_task) for _ in range(NUM_CONNECTIONS)]
-        # Wait for all futures to complete and get results
         results = [f.result() for f in futures]
     
     end_time = time.time()
@@ -83,8 +78,6 @@ def run_multithreading(num_threads=10):
 
 async def run_asyncio():
     start_time = time.time()
-    
-    # Create multiple WebSocket connections concurrently
     tasks = [async_websocket_task() for _ in range(NUM_CONNECTIONS)]
     results = await asyncio.gather(*tasks)
     
@@ -96,9 +89,6 @@ if __name__ == "__main__":
     print(f"Running WebSocket benchmarks...\n")
     print(f"Each connection will send/receive {NUM_MESSAGES} messages")
     print(f"Testing with {NUM_CONNECTIONS} simultaneous connections\n")
-    
-    # Install required packages
-    # pip install websockets
     
     # Sequential
     seq_result = run_sequential()

@@ -4,13 +4,12 @@ import requests
 import aiohttp
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
-# List of URLs to fetch (using a reliable API with high availability)
 URLS = [
     'https://api.github.com/events',
     'https://api.github.com/emojis',
     'https://api.github.com/meta',
     'https://api.github.com/feeds',
-] * 5  # Multiply by 5 to create 20 requests
+] * 5
 
 def fetch_url(url):
     try:
@@ -73,9 +72,6 @@ async def run_asyncio():
 
 if __name__ == "__main__":
     print("Running I/O-bound benchmarks...\n")
-    
-    # Install required packages
-    # pip install requests aiohttp
     
     # Sequential
     seq_result = run_sequential()
