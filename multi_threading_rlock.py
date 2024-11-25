@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 class BankAccount:
     def __init__(self):
         self.balance = 0
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def deposit(self, amount):
         print(
