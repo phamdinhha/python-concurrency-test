@@ -1,6 +1,8 @@
 from multiprocessing import Pool, Process, Queue, Lock, Pipe
 import time
 import os
+from typing import final
+
 
 def cpu_bound_task(n):
     return sum(i * i for i in range(n))
@@ -96,43 +98,54 @@ class LockDemo:
             p.join()
         print(counter.value)
 
+# Move sender and receiver functions outside the class
+def pipe_sender(conn):
+    try:
+        print(f"Sender {os.getpid()} started")
+        conn.send("Hello from the sender")
+        conn.send([1, 2, 3, 4, 5])
+        conn.send({"a": 1, "b": 2})
+        conn.close()
+        print(f"Sender {os.getpid()} finished")
+    finally:
+        conn.close()
+
+def pipe_receiver(conn):
+    try:
+        print(f"Receiver {os.getpid()} started")
+        while True:
+            try:
+                msg = conn.recv()
+                print(f"Received {msg}")
+            except EOFError:
+                print("Receiver EOFError")
+                break
+            except ConnectionError:
+                print("Receiver ConnectionError")
+                break
+        print(f"Receiver {os.getpid()} finished")
+    finally:
+        conn.close()
+
 class PipeDemo:
     @staticmethod
     def basic_pipe_communication():
-        def sender(conn):
-            print(f"Sender {os.getpid()} started")
-            conn.send("Hello from the sender")
-            conn.send([1, 2, 3, 4, 5])
-            conn.send({"a": 1, "b": 2})
-            conn.close()
-            print(f"Sender {os.getpid()} finished")
-        def receiver(conn):
-            print(f"Receiver {os.getpid()} started")
-            while True:
-                try:
-                    msg = conn.recv()
-                    print(f"Received {msg}")
-                except EOFError:
-                    print("Receiver EOFError")
-                    break
-                except ConnectionError:
-                    print("Receiver ConnectionError")
-                    break
-            print(f"Receiver {os.getpid()} finished")
         send_conn, recv_conn = Pipe()
-        p1 = Process(target=sender, args=(send_conn,))
-        p2 = Process(target=receiver, args=(recv_conn,))
-        p1.start()
-        p2.start()
-        p1.join()
-        p2.join()
-        # close the connection
-        send_conn.close()
-        recv_conn.close()
+        try:
+            p1 = Process(target=pipe_sender, args=(send_conn,))
+            p2 = Process(target=pipe_receiver, args=(recv_conn,))
+            p1.start()
+            p2.start()
+            p1.join()
+            p2.join()
+        finally:
+            # close the connection
+            send_conn.close()
+            recv_conn.close()
 
 
 if __name__ == "__main__":
-    # MultiprocessingDemo.basic_pool_test()
+    MultiprocessingDemo.basic_pool_test()
     # MultiprocessingDemo.process_communication_via_queue()
     # MultiprocessingDemo.producer_consumer_via_queue()
 
